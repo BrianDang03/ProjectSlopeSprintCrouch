@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float walkSpeed;
     [SerializeField] private float sprintSpeed;
     [SerializeField] private float groundDrag;
+    [SerializeField] private float airDrag;
     private float moveSpeed;
 
     [Header("Jumping")]
@@ -55,12 +56,14 @@ public class PlayerMovement : MonoBehaviour
 
     private MovementState state;
 
-    private void Start()
+    private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
 
         isReadyToJump = true;
+
+        exitingSlope = false;
 
         startYScale = transform.localScale.y;
     }
@@ -80,7 +83,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            rb.drag = 0;
+            rb.drag = airDrag;
         }
     }
 
@@ -131,7 +134,7 @@ public class PlayerMovement : MonoBehaviour
         yield return new WaitForSeconds(jumpCoolDown);
         isReadyToJump = true;
 
-        exitingSlope = false;
+        exitingSlope = true;
     }
 
     private void SpeedControl()
@@ -187,9 +190,9 @@ public class PlayerMovement : MonoBehaviour
 
         if (IsOnSlope() && !exitingSlope)
         {
-            rb.AddForce(GetSlopeMoveDir() * moveSpeed * 20f, ForceMode.Force);
+            rb.AddForce(GetSlopeMoveDir() * moveSpeed, ForceMode.Force);
 
-            if (rb.velocity.y > 0)
+            if (rb.velocity.y >= 0)
             {
                 rb.AddForce(Vector3.down * 80f, ForceMode.Force);
             }
