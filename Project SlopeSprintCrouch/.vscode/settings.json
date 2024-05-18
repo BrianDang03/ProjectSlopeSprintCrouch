@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Project MoveJump.sln"
+    "dotnet.defaultSolution": "Project SlopeSprintCrouch.sln"
 }
