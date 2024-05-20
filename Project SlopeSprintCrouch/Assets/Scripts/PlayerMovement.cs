@@ -70,7 +70,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.2f, groundLayerMask);
+        isGrounded = Physics.SphereCast(transform.position, 0.5f , Vector3.down, out RaycastHit hit, playerHeight * 0.5f + 0.2f, groundLayerMask);
 
         GetInput();
         SpeedControl();
@@ -102,13 +102,13 @@ public class PlayerMovement : MonoBehaviour
         {
             Jump();
         }
-
-        if (Input.GetKeyDown(crouchKey) && state != MovementState.air)
+        
+        if (Input.GetKeyDown(crouchKey))
         {
             transform.localScale = new Vector3(transform.localScale.x, crouchYScale, transform.localScale.z);
             rb.AddForce(Vector3.down * 5f, ForceMode.Impulse);
         }
-
+        
         if (Input.GetKeyUp(crouchKey))
         {
             transform.localScale = new Vector3(transform.localScale.x, startYScale, transform.localScale.z);
@@ -166,8 +166,7 @@ public class PlayerMovement : MonoBehaviour
             state = MovementState.crouching;
             moveSpeed = crouchSpeed;
         }
-
-        if (isGrounded && Input.GetKey(sprintKey) && state != MovementState.crouching)
+        else if (isGrounded && Input.GetKey(sprintKey))
         {
             state = MovementState.sprinting;
             moveSpeed = sprintSpeed;
@@ -192,15 +191,12 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.AddForce(GetSlopeMoveDir() * moveSpeed, ForceMode.Force);
 
-            if (rb.velocity.y >= 0)
+            if (rb.velocity.y > 0)
             {
                 rb.AddForce(Vector3.down * 80f, ForceMode.Force);
             }
         }
-
-        rb.useGravity = !IsOnSlope();
-
-        if (isGrounded)
+        else if (isGrounded)
         {
             rb.AddForce(moveDir * moveSpeed * 10f, ForceMode.Force);
         }
@@ -208,11 +204,15 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.AddForce(moveDir * moveSpeed * 10f * airMultiplier, ForceMode.Force);
         }
+        else
+        {
+            rb.useGravity = !IsOnSlope();
+        }
     }
 
     private bool IsOnSlope()
     {
-        if (Physics.Raycast(transform.position, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f))
+        if (Physics.SphereCast(transform.position, 0.5f, Vector3.down, out slopeHit, playerHeight))
         {
             float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
             return angle < maxSlopeAngle && angle != 0;
